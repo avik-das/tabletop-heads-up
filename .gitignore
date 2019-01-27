@@ -1,0 +1,11 @@
+# SWIG-generated extension
+ext/raylib/*raylib_wrap.c
+
+# Ruby extension build files
+ext/raylib/Makefile
+ext/raylib/mkmf.log
+ext/raylib/raylib.so
+ext/raylib/raylib_wrap.o
+
+# Final output library
+lib/raylib.so
