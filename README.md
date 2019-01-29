@@ -42,6 +42,10 @@ Quick Start
     bundle exec rake raylib \
         RAYLIB_HEADER_INSTALL_PATH=/path/to/raylib/header \
         RAYLIB_LIB_INSTALL_PATH=/path/to/raylib/lib
+
+    # If compiling on the Raspberry Pi, pass the `PLATFORM` flag. This flag
+    # can be combined with the other flags from above.
+    bundle exec rake raylib PLATFORM=PLATFORM_RPI
     ```
 
 1. **TODO**: need to run a Ruby application that uses Raylib
