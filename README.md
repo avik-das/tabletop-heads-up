@@ -86,3 +86,11 @@ Raylib.main_loop(fps: 30) do
   end
 end
 ```
+
+Packaged Dependencies
+---------------------
+
+### Roboto Condensed Font
+
+- [Homepage](https://fonts.google.com/specimen/Roboto+Condensed?selection.family=Roboto+Condensed)
+- Licensed under the [Apache License, version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
