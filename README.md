@@ -48,10 +48,12 @@ Quick Start
     bundle exec rake raylib PLATFORM=PLATFORM_RPI
     ```
 
-1. Run the HUD Ruby application:
+1. Register for the [OpenWeatherMap API](https://openweathermap.org/api) and obtain an App ID.
+
+1. Run the HUD Ruby application, specifying the App ID as an environment variable:
 
     ```sh
-    ./hud.rb
+    OPEN_WEATHER_APPID='<app-id-from-above>' ./hud.rb
     ```
 
 Clean up

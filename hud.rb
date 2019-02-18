@@ -1,7 +1,70 @@
 #!/usr/bin/env ruby
 
+require 'json'
+require 'logger'
+require 'net/http'
+require 'ostruct'
+
 require_relative 'lib/raylib-rb'
 require_relative 'lib/task'
+
+LOGGER = Logger.new(STDOUT)
+LOGGER.level = Logger::INFO
+at_exit do LOGGER.close end
+
+## NETWORK REQUESTS ###########################################################
+
+# A set of methods to allow fetching weather data from the OpenWeatherMap API.
+# The methods that fetch data should be run in a separate thread to avoid
+# blocking the UI. The suggested use is to run the methods inside of a [Task].
+module WeatherNetworkRetriever
+  OPEN_WEATHER_APP_ID_KEY = 'OPEN_WEATHER_APPID'
+
+  CurrentWeather = Struct.new(:icon, :temp, :description)
+
+  # Call this method to check if the App ID needed to access the OpenWeatherMap
+  # API is present. Perform this check early in order to exit early if the App
+  # ID has not been specified by the user.
+  def self.open_weather_app_id_present?
+    ENV.include?(OPEN_WEATHER_APP_ID_KEY)
+  end
+
+  def self.fetch_current_weather
+    app_id = ENV[OPEN_WEATHER_APP_ID_KEY]
+    res = Net::HTTP.get_response(
+      'api.openweathermap.org',
+      "/data/2.5/weather?id=5400075&units=metric&APPID=#{app_id}"
+    )
+
+    raise "Current weather API returned #{res.code}" unless res.code == '200'
+    begin
+      data = JSON.parse(res.body, object_class: OpenStruct)
+
+      raise 'No temperature found' \
+        unless data.main and data.main.temp
+
+      raise 'No current weather found' \
+        unless data.weather and
+          data.weather.kind_of?(Array) and
+          data.weather[0] and
+          data.weather[0].main and
+          data.weather[0].icon
+
+      current_weather = CurrentWeather.new(
+        data.weather[0].icon,
+        data.main.temp.floor,
+        data.weather[0].main
+      )
+
+      LOGGER.info { 'Fetched current weather' }
+
+      current_weather
+    rescue
+      LOGGER.error { "Could not parse current weather response: #{res.body}" }
+      raise
+    end
+  end
+end
 
 ## COMPONENTS #################################################################
 
@@ -127,27 +190,9 @@ end
 # A component that displays the current weather. Manages retrieving the weather
 # data in order to display it.
 class WeatherDisplay
-  Weather = Struct.new(:icon, :temp, :description)
-
   def initialize
-    # TODO:
-    #   - Retrieve real weather data
-    #   - Set the refresh interval accordingly
     @current_weather = AutoRefreshingData.new(REFRESH_INTERVAL_SECONDS) do
-      sleep 1
-
-      if rand < 0.3
-        raise 'failed'
-      else
-        Weather.new(
-          Dir
-            .glob('resources/icons/*.png')
-            .map { |png| File.basename(png)[0..2] }
-            .sample,
-          rand(0..25),
-          ['Sunny', 'Mist', 'Rain', 'Cloudy'].sample
-        )
-      end
+      WeatherNetworkRetriever.fetch_current_weather
     end
 
     @icon_cache = ImageCache.new
@@ -178,7 +223,7 @@ class WeatherDisplay
 
   private
 
-  REFRESH_INTERVAL_SECONDS = 2
+  REFRESH_INTERVAL_SECONDS = 60
   private_constant :REFRESH_INTERVAL_SECONDS
 
   def show_loading(window, fonts)
@@ -270,6 +315,13 @@ Window = Struct.new(:w, :h)
 WINDOW = Window.new(480, 320)
 
 ## MAIN LOOP ##################################################################
+
+unless WeatherNetworkRetriever.open_weather_app_id_present?
+  message = "ERR: '#{WeatherNetworkRetriever::OPEN_WEATHER_APP_ID_KEY}' " +
+    'environment variable not present'
+  puts message
+  exit 1
+end
 
 Raylib.InitWindow(WINDOW.w, WINDOW.h, 'Pi HUD')
 
