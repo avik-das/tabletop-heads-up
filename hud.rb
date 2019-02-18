@@ -165,8 +165,71 @@ class AutoRefreshingData
   attr_reader :data, :last_refresh_time, :state
 end
 
+# A carousel consisting of multiple "pages". Features:
+#
+# - Each page displays for a set amount of time, then the display switches to
+#   the next page in the rotation.
+#
+# - The user can click to force a page switch. After doing so, the user cannot
+#   force a page flip for some amount of time (typically less than the amount
+#   of time required for the next page to display automatically).
+class Carousel
+  def initialize(now)
+    @pages = [
+      DateTimeDisplay.new,
+      WeatherDisplay.new
+    ]
+
+    @last_click_time = Time.at(0)
+
+    @current_page_index = 0
+    @page_start_time = now
+    @page_switch_time_left = -1
+  end
+
+  def on_tick(now)
+    advance_page(now) if now - @page_start_time > PAGE_SWITCH_SECONDS
+
+    @page_switch_time_left = @page_start_time + PAGE_SWITCH_SECONDS - now
+
+    # Allow all the pages, even the ones that are not currently rendering, to
+    # update their internal state as necessary.
+    @pages.each { |page| page.on_tick(now) }
+  end
+
+  def on_mouse_click(now)
+    if now - @last_click_time >= CLICK_THROTTLE_SECONDS
+      @last_click_time = now
+      advance_page(now)
+    end
+  end
+
+  def draw(window, fonts, now)
+    current_page.draw(window, fonts, now)
+  end
+
+  private
+
+  CLICK_THROTTLE_SECONDS = 0.5
+  PAGE_SWITCH_SECONDS = 15
+  private_constant \
+    :CLICK_THROTTLE_SECONDS,
+    :PAGE_SWITCH_SECONDS
+
+  def current_page; @pages[@current_page_index]; end
+
+  def advance_page(now)
+    @page_start_time = now
+    @current_page_index = (@current_page_index + 1) % @pages.size
+  end
+end
+
 # A component that displays the specified date and time.
 class DateTimeDisplay
+  def on_tick(now)
+    # Do nothing
+  end
+
   def draw(window, fonts, now)
     date = Raylib::CenterAnchoredText.new(
       now.strftime('%a %-m/%d'),
@@ -326,16 +389,15 @@ end
 Raylib.InitWindow(WINDOW.w, WINDOW.h, 'Pi HUD')
 
 font_cache = FontCache.new
-datetime_display = DateTimeDisplay.new
-weather_display = WeatherDisplay.new
+app = Carousel.new(Time.now)
 
 Raylib.main_loop(fps: 10) do
   now = Time.now
-  weather_display.on_tick(now)
+  app.on_tick(now)
+  app.on_mouse_click(now) \
+    if Raylib.IsMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON)
 
   Raylib.draw_with_background(Raylib::BLACK) do
-    # TODO: switch between pages instead of showing only one
-    # datetime_display.draw(WINDOW, font_cache, now)
-    weather_display.draw(WINDOW, font_cache, now)
+    app.draw(WINDOW, font_cache, now)
   end
 end
