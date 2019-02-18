@@ -90,6 +90,13 @@ end
 Packaged Dependencies
 ---------------------
 
+### Open Weather Icons
+
+- [Homepage](https://github.com/isneezy/open-weather-icons)
+- Rendered as fixed-size white PNGs
+- Open Weather Icon is licenced under MIT
+- Icons from [Flaticon](https://www.flaticon.com) are under [CC](http://creativecommons.org/licenses/by/3.0/): [Lucy G](http://www.flaticon.com/authors/lucy-g), [Freepik](http://www.freepik.com), [SimpleIcon](http://www.flaticon.com/authors/simpleicon), [Robin Kylander](http://www.flaticon.com/authors/robin-kylander), [Darius Dan](http://www.flaticon.com/authors/darius-dan), [AnhGreen](http://www.flaticon.com/authors/anhgreen)
+
 ### Roboto Condensed Font
 
 - [Homepage](https://fonts.google.com/specimen/Roboto+Condensed?selection.family=Roboto+Condensed)
