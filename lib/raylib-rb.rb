@@ -16,7 +16,7 @@ require_relative 'raylib'
 # A lack of a convenience method doesn't mean the method is not useful, just
 # that the corresponding functionality/usage pattern is not present in this
 # project.
-module Raylib
+module Raylib # top-level structure
   # Run the standard Raylib main loop, running the specified code until the
   # window is ready to close, then closing the window.
   #
@@ -64,7 +64,9 @@ module Raylib
 
     Raylib.EndDrawing
   end
+end
 
+module Raylib # colors
   # Helper method to construct a [Color] object.
   def self.color(r, g, b, a = 255)
     col = Color.new
@@ -107,4 +109,61 @@ module Raylib
   BLANK      = color(  0,   0,   0,   0)
   MAGENTA    = color(255,   0, 255, 255)
   RAYWHITE   = color(245, 245, 245, 255)
+end
+
+module Raylib # geometry
+  # Helper method to construct a [Vector2] object.
+  def self.vector2(x, y)
+    vec = Vector2.new
+    vec.x = x
+    vec.y = y
+
+    vec
+  end
+end
+
+module Raylib # center anchored text
+  class CenterAnchoredText
+    # This include brings in the methods defined in the unadorned Raylib
+    # module. This means the base library methods are included, but none of the
+    # higher-level abstractions, such as [Raylib.vector2(x, y)], are included.
+    #
+    # Nevertheless, having the base library methods available without
+    # qualification shortens the code greatly.
+    include Raylib
+
+    def initialize(text, **opts)
+      @text = text
+
+      opts = DEFAULT_OPTIONS.merge(opts)
+      @font = opts[:font] || GetFontDefault()
+      @font_size = opts[:size]
+      @color = opts[:color]
+      @spacing = @font_size / 10
+    end
+
+    def draw_at(cx, cy)
+      size = box_size
+      top_left_position = Raylib.vector2(
+        (cx - size.x / 2).floor,
+        (cy - size.y / 2).floor
+      )
+
+      DrawTextEx(@font, @text, top_left_position, @font_size, @spacing, @color)
+    end
+
+    def box_size
+      MeasureTextEx(@font, @text, @font_size, @spacing)
+    end
+
+    private
+
+    DEFAULT_OPTIONS = {
+      font: nil,
+      size: 16,
+      color: BLACK
+    }
+
+    private_constant :DEFAULT_OPTIONS
+  end
 end
