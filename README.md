@@ -48,7 +48,11 @@ Quick Start
     bundle exec rake raylib PLATFORM=PLATFORM_RPI
     ```
 
-1. **TODO**: need to run a Ruby application that uses Raylib
+1. Run the HUD Ruby application:
+
+    ```sh
+    ./hud.rb
+    ```
 
 Clean up
 --------
@@ -63,28 +67,6 @@ The intermediate files generated during the building of the extension can be cle
 # To clean up all build artifacts, including the final extension library:
 #
 #   rake clobber
-```
-
-Notes on using the Raylib bindings
-----------------------------------
-
-In addition to automatically generate wrappers around the Raylib functions and data types, this project provides some higher-level Ruby abstractions. To use them, simply load `lib/raylib-rb`. This gives you access to both the original Raylib functions, as well as the Ruby abstractions.
-
-Below is a complete example of a Raylib application built with the bindings:
-
-```rb
-require_relative 'lib/raylib-rb'
-
-Raylib.InitWindow(480, 320, "Ruby Raylib test")
-
-Raylib.main_loop(fps: 30) do
-  now = Time.now.to_f * 3
-  x = (Math.cos(now) * 150 + 240).floor
-
-  Raylib.draw_with_background(Raylib::RAYWHITE) do
-    Raylib.DrawCircle(x, 160, 50, Raylib::MAROON)
-  end
-end
 ```
 
 Packaged Dependencies
