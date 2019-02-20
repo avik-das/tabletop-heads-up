@@ -20,7 +20,8 @@ at_exit do LOGGER.close end
 module WeatherNetworkRetriever
   OPEN_WEATHER_APP_ID_KEY = 'OPEN_WEATHER_APPID'
 
-  CurrentWeather = Struct.new(:icon, :temp, :description)
+  WeatherDataPoint = Struct.new(:timestamp, :icon, :temp, :description)
+  Forecast = Struct.new(:predictions)
 
   # Call this method to check if the App ID needed to access the OpenWeatherMap
   # API is present. Perform this check early in order to exit early if the App
@@ -39,18 +40,10 @@ module WeatherNetworkRetriever
     raise "Current weather API returned #{res.code}" unless res.code == '200'
     begin
       data = JSON.parse(res.body, object_class: OpenStruct)
+      validate_weather_data_point(data)
 
-      raise 'No temperature found' \
-        unless data.main and data.main.temp
-
-      raise 'No current weather found' \
-        unless data.weather and
-          data.weather.kind_of?(Array) and
-          data.weather[0] and
-          data.weather[0].main and
-          data.weather[0].icon
-
-      current_weather = CurrentWeather.new(
+      current_weather = WeatherDataPoint.new(
+        Time.at(data.dt),
         data.weather[0].icon,
         data.main.temp.floor,
         data.weather[0].main
@@ -63,6 +56,60 @@ module WeatherNetworkRetriever
       LOGGER.error { "Could not parse current weather response: #{res.body}" }
       raise
     end
+  end
+
+  def self.fetch_forecast
+    app_id = ENV[OPEN_WEATHER_APP_ID_KEY]
+    res = Net::HTTP.get_response(
+      'api.openweathermap.org',
+      "/data/2.5/forecast?id=5400075&units=metric&APPID=#{app_id}"
+    )
+
+    raise "Forecast weather API returned #{res.code}" unless res.code == '200'
+    begin
+      data = JSON.parse(res.body, object_class: OpenStruct)
+      data.list.each do |prediction|
+        validate_weather_data_point(prediction)
+      end
+
+      predictions = data
+        .list
+        .map { |prediction|
+          WeatherDataPoint.new(
+            Time.at(prediction.dt),
+            prediction.weather[0].icon,
+            prediction.main.temp.floor,
+            prediction.weather[0].main
+          )
+        }
+        .sort_by(&:timestamp)
+      raise 'No forecast data found' if predictions.empty?
+
+      forecast = Forecast.new(predictions)
+
+      LOGGER.info { 'Fetched weather forecast' }
+
+      forecast
+    rescue
+      LOGGER.error { "Could not parse weather forecast response: #{res.body}" }
+      raise
+    end
+  end
+
+  private
+
+  def self.validate_weather_data_point(data_point)
+      raise 'Weather data_point has no timestamp' unless data_point.dt
+
+      raise 'No temperature found' \
+        unless data_point.main and data_point.main.temp
+
+      raise 'No weather condition found' \
+        unless data_point.weather and
+          data_point.weather.kind_of?(Array) and
+          data_point.weather[0] and
+          data_point.weather[0].main and
+          data_point.weather[0].icon
   end
 end
 
@@ -177,7 +224,8 @@ class Carousel
   def initialize(now)
     @pages = [
       DateTimeDisplay.new,
-      WeatherDisplay.new
+      WeatherDisplay.new,
+      WeatherForecastDisplay.new
     ]
 
     @last_click_time = Time.at(0)
@@ -350,6 +398,150 @@ class WeatherDisplay
 
   def icon_for_current_weather(current_weather)
     path = "icons/#{current_weather.icon}.png"
+    @icon_cache.image(path)
+  end
+
+  def show_last_refreshed_time(window, fonts, time)
+    Raylib::CenterAnchoredText.new(
+      "Last refreshed at #{time.strftime('%-I:%M')}",
+      font: fonts.light(24),
+      size: 24,
+      color: Raylib::LIGHTGRAY
+    ).draw_at(window.w / 2, window.h - 48)
+  end
+
+  def show_error(window, fonts)
+    Raylib::CenterAnchoredText.new(
+      'Last refresh failed',
+      font: fonts.light(24),
+      size: 24,
+      color: Raylib::RED
+    ).draw_at(window.w / 2, window.h - 48)
+  end
+end
+
+# A component that displays the weather forecast for the current data. Manages
+# retrieving the weather data in order to display it.
+class WeatherForecastDisplay
+  def initialize
+    @forecast = AutoRefreshingData.new(REFRESH_INTERVAL_SECONDS) do
+      WeatherNetworkRetriever.fetch_forecast
+    end
+
+    @icon_cache = ImageCache.new
+  end
+
+  def on_tick(now)
+    @forecast.on_tick(now)
+  end
+
+  def draw(window, fonts, now)
+    if @forecast.data.nil?
+      show_loading(window, fonts)
+    else
+      show_forecast(window, fonts, @forecast.data)
+    end
+
+    case @forecast.state
+    when :loaded
+      show_last_refreshed_time(
+        window,
+        fonts,
+        @forecast.last_refresh_time
+      )
+    when :error
+      show_error(window, fonts)
+    end
+  end
+
+  private
+
+  MAX_PREDICTIONS_TO_SHOW = 4
+  SIDE_PADDING = 32
+  REFRESH_INTERVAL_SECONDS = 60
+
+  private_constant \
+    :MAX_PREDICTIONS_TO_SHOW,
+    :REFRESH_INTERVAL_SECONDS
+
+  def show_loading(window, fonts)
+    text = Raylib::CenterAnchoredText.new(
+      'Loading forecast...',
+      font: fonts.main(48),
+      size: 48,
+      color: Raylib::RAYWHITE
+    )
+
+    text.draw_at(window.w / 2, window.h / 2)
+  end
+
+  def show_forecast(window, fonts, forecast)
+    predictions = forecast.predictions.take(MAX_PREDICTIONS_TO_SHOW)
+    return if predictions.empty?
+
+    max_temp = predictions.max_by(&:temp).temp
+    min_temp = predictions.min_by(&:temp).temp
+
+    if (max_temp - min_temp) < 1
+      temp_ys = predictions.map { |_| 202 }
+    else
+      temp_ys = predictions
+        .map(&:temp)
+        .map { |temp|
+          (224 - (temp - min_temp).to_f / (max_temp - min_temp) * 44).floor
+        }
+    end
+
+    column_w = (window.w - SIDE_PADDING * 2) / predictions.size
+    column_xs = (0...predictions.size)
+      .map { |i| SIDE_PADDING + column_w * i + column_w / 2 }
+
+    predictions
+      .take(predictions.size - 1)
+      .each_with_index do |prediction, i|
+        Raylib.DrawLineEx(
+          Raylib.vector2(column_xs[i], temp_ys[i]),
+          Raylib.vector2(column_xs[i + 1], temp_ys[i + 1]),
+          2,
+          Raylib::DARKGRAY
+        )
+      end
+
+    predictions.each_with_index do |prediction, i|
+      column_x = column_xs[i]
+
+      Raylib::CenterAnchoredText.new(
+        prediction.timestamp.strftime('%-I %p'),
+        font: fonts.light(32),
+        size: 32,
+        color: Raylib::RAYWHITE
+      ).draw_at(column_x, 72)
+
+      icon = icon_for_prediction(prediction)
+      Raylib.DrawTextureEx(
+        icon,
+        Raylib.vector2(
+          column_x - 20,
+          104
+        ),
+        0,   # rotation
+        0.4, # scale
+        Raylib::WHITE
+      )
+
+      Raylib.DrawCircle(column_x, temp_ys[i], 36, Raylib::BLACK)
+
+      Raylib::CenterAnchoredText.new(
+        "#{prediction.temp}°",
+        font: fonts.main(32),
+        size: 32,
+        color: Raylib::RAYWHITE
+      ).draw_at(column_x, temp_ys[i])
+    end
+  end
+
+  def icon_for_prediction(prediction)
+    path = "icons/#{prediction.icon}.png"
     @icon_cache.image(path)
   end
 
