@@ -67,69 +67,69 @@ module Raylib # top-level structure
 end
 
 module Raylib # colors
-  # Helper method to construct a [Color] object.
-  def self.color(r, g, b, a = 255)
-    col = Color.new
-    col.r = r
-    col.g = g
-    col.b = b
-    col.a = a
+  class Color
+    # Re-define the auto-generated constructor so parameters can be passed
+    # during initialization.
 
-    col
+    alias_method :swig_initialize, :initialize
+    def initialize(r, g, b, a = 255)
+      swig_initialize
+      self.r = r
+      self.g = g
+      self.b = b
+      self.a = a
+    end
   end
 
   # Colors defined by Raylib. Because these colors are defined in the C header
   # file as struct initializers, SWIG is unable to translate them to Ruby
   # constants. Duplicate them here for convenience.
 
-  LIGHTGRAY  = color(200, 200, 200, 255)
-  GRAY       = color(130, 130, 130, 255)
-  DARKGRAY   = color( 80,  80,  80, 255)
-  YELLOW     = color(253, 249,   0, 255)
-  GOLD       = color(255, 203,   0, 255)
-  ORANGE     = color(255, 161,   0, 255)
-  PINK       = color(255, 109, 194, 255)
-  RED        = color(230,  41,  55, 255)
-  MAROON     = color(190,  33,  55, 255)
-  GREEN      = color(  0, 228,  48, 255)
-  LIME       = color(  0, 158,  47, 255)
-  DARKGREEN  = color(  0, 117,  44, 255)
-  SKYBLUE    = color(102, 191, 255, 255)
-  BLUE       = color(  0, 121, 241, 255)
-  DARKBLUE   = color(  0,  82, 172, 255)
-  PURPLE     = color(200, 122, 255, 255)
-  VIOLET     = color(135,  60, 190, 255)
-  DARKPURPLE = color(112,  31, 126, 255)
-  BEIGE      = color(211, 176, 131, 255)
-  BROWN      = color(127, 106,  79, 255)
-  DARKBROWN  = color( 76,  63,  47, 255)
+  LIGHTGRAY  = Color.new(200, 200, 200, 255)
+  GRAY       = Color.new(130, 130, 130, 255)
+  DARKGRAY   = Color.new( 80,  80,  80, 255)
+  YELLOW     = Color.new(253, 249,   0, 255)
+  GOLD       = Color.new(255, 203,   0, 255)
+  ORANGE     = Color.new(255, 161,   0, 255)
+  PINK       = Color.new(255, 109, 194, 255)
+  RED        = Color.new(230,  41,  55, 255)
+  MAROON     = Color.new(190,  33,  55, 255)
+  GREEN      = Color.new(  0, 228,  48, 255)
+  LIME       = Color.new(  0, 158,  47, 255)
+  DARKGREEN  = Color.new(  0, 117,  44, 255)
+  SKYBLUE    = Color.new(102, 191, 255, 255)
+  BLUE       = Color.new(  0, 121, 241, 255)
+  DARKBLUE   = Color.new(  0,  82, 172, 255)
+  PURPLE     = Color.new(200, 122, 255, 255)
+  VIOLET     = Color.new(135,  60, 190, 255)
+  DARKPURPLE = Color.new(112,  31, 126, 255)
+  BEIGE      = Color.new(211, 176, 131, 255)
+  BROWN      = Color.new(127, 106,  79, 255)
+  DARKBROWN  = Color.new( 76,  63,  47, 255)
 
-  WHITE      = color(255, 255, 255, 255)
-  BLACK      = color(  0,   0,   0, 255)
-  BLANK      = color(  0,   0,   0,   0)
-  MAGENTA    = color(255,   0, 255, 255)
-  RAYWHITE   = color(245, 245, 245, 255)
+  WHITE      = Color.new(255, 255, 255, 255)
+  BLACK      = Color.new(  0,   0,   0, 255)
+  BLANK      = Color.new(  0,   0,   0,   0)
+  MAGENTA    = Color.new(255,   0, 255, 255)
+  RAYWHITE   = Color.new(245, 245, 245, 255)
 end
 
 module Raylib # geometry
-  # Helper method to construct a [Vector2] object.
-  def self.vector2(x, y)
-    vec = Vector2.new
-    vec.x = x
-    vec.y = y
+  class Vector2
+    # Re-define the auto-generated constructor so parameters can be passed
+    # during initialization.
 
-    vec
+    alias_method :swig_initialize, :initialize
+    def initialize(x, y)
+      swig_initialize
+      self.x = x
+      self.y = y
+    end
   end
 end
 
 module Raylib # center anchored text
   class CenterAnchoredText
-    # This include brings in the methods defined in the unadorned Raylib
-    # module. This means the base library methods are included, but none of the
-    # higher-level abstractions, such as [Raylib.vector2(x, y)], are included.
-    #
-    # Nevertheless, having the base library methods available without
-    # qualification shortens the code greatly.
     include Raylib
 
     def initialize(text, **opts)
@@ -144,7 +144,7 @@ module Raylib # center anchored text
 
     def draw_at(cx, cy)
       size = box_size
-      top_left_position = Raylib.vector2(
+      top_left_position = Vector2.new(
         (cx - size.x / 2).floor,
         (cy - size.y / 2).floor
       )

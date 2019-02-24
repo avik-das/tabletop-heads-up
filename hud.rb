@@ -500,8 +500,8 @@ class WeatherForecastDisplay
       .take(predictions.size - 1)
       .each_with_index do |prediction, i|
         Raylib.DrawLineEx(
-          Raylib.vector2(column_xs[i], temp_ys[i]),
-          Raylib.vector2(column_xs[i + 1], temp_ys[i + 1]),
+          Raylib::Vector2.new(column_xs[i], temp_ys[i]),
+          Raylib::Vector2.new(column_xs[i + 1], temp_ys[i + 1]),
           2,
           Raylib::DARKGRAY
         )
@@ -520,7 +520,7 @@ class WeatherForecastDisplay
       icon = icon_for_prediction(prediction)
       Raylib.DrawTextureEx(
         icon,
-        Raylib.vector2(
+        Raylib::Vector2.new(
           column_x - 20,
           104
         ),
