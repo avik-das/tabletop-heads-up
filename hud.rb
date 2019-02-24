@@ -279,15 +279,17 @@ class DateTimeDisplay
   end
 
   def draw(window, fonts, now)
-    date = Raylib::CenterAnchoredText.new(
+    date = Raylib::AnchoredText.new(
       now.strftime('%a %-m/%d'),
+      :center,
       font: fonts.main(72),
       size: 72,
       color: Raylib::RAYWHITE
     )
 
-    time = Raylib::CenterAnchoredText.new(
+    time = Raylib::AnchoredText.new(
       now.strftime('%-I:%M'),
+      :center,
       font: fonts.bold(96),
       size: 96,
       color: Raylib::RAYWHITE
@@ -338,8 +340,9 @@ class WeatherDisplay
   private_constant :REFRESH_INTERVAL_SECONDS
 
   def show_loading(window, fonts)
-    text = Raylib::CenterAnchoredText.new(
+    text = Raylib::AnchoredText.new(
       'Loading weather...',
+      :center,
       font: fonts.main(48),
       size: 48,
       color: Raylib::RAYWHITE
@@ -357,22 +360,25 @@ class WeatherDisplay
       Raylib::WHITE
     )
 
-    temp = Raylib::CenterAnchoredText.new(
+    temp = Raylib::AnchoredText.new(
       current_weather.temp.to_s,
+      :center,
       font: fonts.bold(96),
       size: 96,
       color: Raylib::RAYWHITE
     )
 
-    unit = Raylib::CenterAnchoredText.new(
+    unit = Raylib::AnchoredText.new(
       '°C',
+      :top_left,
       font: fonts.main(64),
       size: 64,
       color: Raylib::RAYWHITE
     )
 
-    desc = Raylib::CenterAnchoredText.new(
+    desc = Raylib::AnchoredText.new(
       current_weather.description,
+      :center,
       font: fonts.light(48),
       size: 48,
       color: Raylib::RAYWHITE
@@ -381,15 +387,16 @@ class WeatherDisplay
     temp_padding = 8
 
     temp_w = temp.box_size.x
+    temp_h = temp.box_size.y
     temp_x = (window.w * 5 / 8).floor
     temp_y = window.h / 2 - 48
 
     unit_w = unit.box_size.x
-    unit_x = temp_x + temp_w / 2 + temp_padding + unit_w / 2
-    unit_y = temp_y - 8
+    unit_x = temp_x + temp_w / 2 + temp_padding
+    unit_y = temp_y - temp_h / 2 + 6
 
     desc_x = temp_x - temp_w / 2 + (temp_w + temp_padding + unit_w) / 2
-    desc_y = temp_y + 64
+    desc_y = temp_y + 72
 
     temp.draw_at(temp_x, temp_y)
     unit.draw_at(unit_x, unit_y)
@@ -402,8 +409,9 @@ class WeatherDisplay
   end
 
   def show_last_refreshed_time(window, fonts, time)
-    Raylib::CenterAnchoredText.new(
+    Raylib::AnchoredText.new(
       "Last refreshed at #{time.strftime('%-I:%M')}",
+      :center,
       font: fonts.light(24),
       size: 24,
       color: Raylib::LIGHTGRAY
@@ -411,8 +419,9 @@ class WeatherDisplay
   end
 
   def show_error(window, fonts)
-    Raylib::CenterAnchoredText.new(
+    Raylib::AnchoredText.new(
       'Last refresh failed',
+      :center,
       font: fonts.light(24),
       size: 24,
       color: Raylib::RED
@@ -465,8 +474,9 @@ class WeatherForecastDisplay
     :REFRESH_INTERVAL_SECONDS
 
   def show_loading(window, fonts)
-    text = Raylib::CenterAnchoredText.new(
+    text = Raylib::AnchoredText.new(
       'Loading forecast...',
+      :center,
       font: fonts.main(48),
       size: 48,
       color: Raylib::RAYWHITE
@@ -510,8 +520,9 @@ class WeatherForecastDisplay
     predictions.each_with_index do |prediction, i|
       column_x = column_xs[i]
 
-      Raylib::CenterAnchoredText.new(
+      Raylib::AnchoredText.new(
         prediction.timestamp.strftime('%-I %p'),
+        :center,
         font: fonts.light(32),
         size: 32,
         color: Raylib::RAYWHITE
@@ -531,8 +542,9 @@ class WeatherForecastDisplay
 
       Raylib.DrawCircle(column_x, temp_ys[i], 36, Raylib::BLACK)
 
-      Raylib::CenterAnchoredText.new(
+      Raylib::AnchoredText.new(
         "#{prediction.temp}°",
+        :center,
         font: fonts.main(32),
         size: 32,
         color: Raylib::RAYWHITE
@@ -546,8 +558,9 @@ class WeatherForecastDisplay
   end
 
   def show_last_refreshed_time(window, fonts, time)
-    Raylib::CenterAnchoredText.new(
+    Raylib::AnchoredText.new(
       "Last refreshed at #{time.strftime('%-I:%M')}",
+      :center,
       font: fonts.light(24),
       size: 24,
       color: Raylib::LIGHTGRAY
@@ -555,8 +568,9 @@ class WeatherForecastDisplay
   end
 
   def show_error(window, fonts)
-    Raylib::CenterAnchoredText.new(
+    Raylib::AnchoredText.new(
       'Last refresh failed',
+      :center,
       font: fonts.light(24),
       size: 24,
       color: Raylib::RED
