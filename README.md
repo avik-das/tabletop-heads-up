@@ -1,5 +1,22 @@
-Raspberry Pi Heads-Up Display (HUD)
-===================================
+Table-top Heads-Up Display (HUD)
+================================
+
+A small Heads-Up Display (HUD) to show some useful information at a glance, like the current time and weather. Designed for a small LCD screen attached to a Raspberry Pi that I have running at home. Some design principles I've followed:
+
+- Fits on a 480×320 pixel screen.
+- Easy to see the basic information from far away, meaning not too much information on a single screen.
+- Not too many separate screens, as that prevents useful information from being visible more often.
+
+<img src="screenshot-weather.png" width="480" alt="The current weather page, showing an icon and description for the weather condition and the temperature." />
+
+For more information about the development process, see the following blog posts:
+
+1. [Setting up an LCD screen on the Raspberry Pi, 2019 edition](https://avikdas.com/2018/12/31/setting-up-lcd-screen-on-raspberry-pi.html)
+1. [Writing GUI applications on the Raspberry Pi without a desktop environment](https://avikdas.com/2018/12/31/setting-up-lcd-screen-on-raspberry-pi.html)
+1. [Creating Raspberry Pi applications with Raylib and Ruby](https://avikdas.com/2019/02/19/creating-raspberry-pi-applications-with-raylib-and-ruby.html)
+1. [Creating Raspberry Pi applications with Raylib and Ruby - Part II](https://avikdas.com/2019/03/04/creating-raspberry-pi-applications-with-raylib-and-ruby-part-2.html)
+
+Despite running primarily on a Raspberry Pi, nothing about this project is specific to the platform.
 
 Quick Start
 -----------
