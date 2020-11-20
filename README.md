@@ -12,7 +12,7 @@ A small Heads-Up Display (HUD) to show some useful information at a glance, like
 For more information about the development process, see the following blog posts:
 
 1. [Setting up an LCD screen on the Raspberry Pi, 2019 edition](https://avikdas.com/2018/12/31/setting-up-lcd-screen-on-raspberry-pi.html)
-1. [Writing GUI applications on the Raspberry Pi without a desktop environment](https://avikdas.com/2018/12/31/setting-up-lcd-screen-on-raspberry-pi.html)
+1. [Writing GUI applications on the Raspberry Pi without a desktop environment](https://avikdas.com/2019/01/23/writing-gui-applications-on-raspberry-pi-without-x.html)
 1. [Creating Raspberry Pi applications with Raylib and Ruby](https://avikdas.com/2019/02/19/creating-raspberry-pi-applications-with-raylib-and-ruby.html)
 1. [Creating Raspberry Pi applications with Raylib and Ruby - Part II](https://avikdas.com/2019/03/04/creating-raspberry-pi-applications-with-raylib-and-ruby-part-2.html)
 
