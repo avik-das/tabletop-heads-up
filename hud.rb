@@ -601,7 +601,7 @@ Raylib.main_loop(fps: 10) do
   now = Time.now
   app.on_tick(now)
   app.on_mouse_click(now) \
-    if Raylib.IsMouseButtonPressed(Raylib::MOUSE_LEFT_BUTTON)
+    if Raylib.IsMouseButtonPressed(Raylib::MOUSE_BUTTON_LEFT)
 
   Raylib.draw_with_background(Raylib::BLACK) do
     app.draw(WINDOW, font_cache, now)
