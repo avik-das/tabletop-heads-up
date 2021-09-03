@@ -36,7 +36,7 @@ Quick Start
     sudo apt install build-essential swig
     ```
 
-1. Ensure you have a suitably new version of Ruby, along with its development headers needed to build native extensions. If you're using the system-wide Ruby installation on Debian-based systems:
+1. Ensure you have a suitably new version of Ruby (3.x), along with its development headers needed to build native extensions. If you're using the system-wide Ruby installation on Debian-based systems:
 
     ```sh
     sudo apt install ruby ruby-dev

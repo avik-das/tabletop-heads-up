@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
 
 group :development do
-  gem 'rake', '~> 12'
+  gem 'rake', '~> 13'
 end
